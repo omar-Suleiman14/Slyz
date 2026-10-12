@@ -158,14 +158,14 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 :root{--studio-surface:#f3f6f5;--studio-accent:#187f74}
 body{background:var(--studio-surface);color:#193438}
 .topbar{background:#fcfdfc;border-bottom:1px solid #dde8e3}
-.workspace{--slides-w:216px;--design-w:282px;display:grid;grid-template-columns:var(--slides-w) 7px minmax(0,1fr) 7px var(--design-w);grid-template-rows:minmax(0,1fr);gap:0;transition:grid-template-columns .24s cubic-bezier(.2,.7,.2,1);background:#f0f4f2}
+.workspace{--slides-w:216px;--design-w:282px;display:grid;grid-template-columns:var(--slides-visible-w,var(--slides-w)) 7px minmax(0,1fr) 7px var(--design-visible-w,var(--design-w));grid-template-rows:minmax(0,1fr);gap:0;transition:grid-template-columns .24s cubic-bezier(.2,.7,.2,1);background:#f0f4f2}
 .workspace>.sidebar{grid-column:1;grid-row:1;overflow:auto;min-width:0;min-height:0;background:#f9fbf9}
 .workspace>.left-resizer{grid-column:2;grid-row:1}
 .workspace>.main{grid-column:3;grid-row:1;background:radial-gradient(ellipse at top center,#f8faf9,#eef3f1 84%);padding:clamp(20px,2.4vw,42px);min-width:0}
 .workspace>.right-resizer{grid-column:4;grid-row:1}
 .workspace>.inspector{grid-column:5;grid-row:1;min-width:0;min-height:0;background:#fcfdfc}
-.workspace[data-slides="closed"]{--slides-w:0px}
-.workspace[data-design="closed"]{--design-w:0px}
+.workspace[data-slides="closed"]{--slides-visible-w:0px}
+.workspace[data-design="closed"]{--design-visible-w:0px}
 .workspace[data-slides="closed"]>.sidebar,.workspace[data-design="closed"]>.inspector{opacity:0;visibility:hidden;padding:0;border:0;overflow:hidden;pointer-events:none}
 .workspace[data-slides="closed"]>.left-resizer,.workspace[data-design="closed"]>.right-resizer{cursor:default;pointer-events:none}
 .panel-resizer{position:relative;background:#edf2f0;border-inline:1px solid #e2eae6;cursor:col-resize;touch-action:none;z-index:3;display:flex;align-items:center;justify-content:center}
@@ -396,12 +396,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .workspace{
  height:calc(100dvh - 64px);min-height:450px;
  --slides-w:222px;--design-w:288px;
- grid-template-columns:var(--slides-w) 5px minmax(0,1fr) 5px var(--design-w);
+ grid-template-columns:var(--slides-visible-w,var(--slides-w)) 5px minmax(0,1fr) 5px var(--design-visible-w,var(--design-w));
  background:#f7f7f6;
  transition:grid-template-columns .19s cubic-bezier(.2,.75,.3,1);
 }
-.workspace[data-slides="closed"]{--slides-w:0px}
-.workspace[data-design="closed"]{--design-w:0px}
+.workspace[data-slides="closed"]{--slides-visible-w:0px}
+.workspace[data-design="closed"]{--design-visible-w:0px}
 .workspace>.sidebar{background:#fafaf9;border-right:0;padding:22px 12px 20px}
 .workspace>.inspector{background:#fff;border-left:0;padding:22px 18px 36px}
 .workspace>.main{
