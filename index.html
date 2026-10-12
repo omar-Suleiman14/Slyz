@@ -742,6 +742,47 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .export-menu button>span{display:flex;flex-direction:column;gap:3px;font-weight:650}
 .export-menu small{font-size:10px;color:#898989;font-weight:400}
 .export-menu .lucide{width:18px;height:18px;color:#777}
+
+/* Editing controls stay minimal until the block is selected. */
+.slide-item-wrap .block-tools{inset-inline-start:-30px;gap:1px}
+.slide-item-wrap .block-handle,.slide-item-wrap .block-plus{width:25px;min-width:25px;height:29px;padding:4px;background:transparent;border:0;border-radius:6px;color:#999}
+.slide-item-wrap .block-tools svg{width:15px;height:15px;stroke-width:1.7}
+.slide-item-wrap .block-resize{width:23px;height:23px;min-width:23px;min-height:23px;bottom:-12px;right:-12px;background:transparent;border:0;box-shadow:none}
+.slide-item-wrap .block-resize:after{width:8px;height:8px;border:1.5px solid #a3a8ad;background:#fff;border-radius:2px;box-shadow:none}
+.slide .slide-item-wrap.block-active{outline:1px solid #969fa6;outline-offset:4px}
+#removeSelectedBlock,.blockrow .mini.delete-mini{color:#c93434!important}
+#removeSelectedBlock:hover,.blockrow .mini.delete-mini:hover{background:#fff0ef!important;color:#a92222!important}
+#deleteBtn,#clearBtn{color:#b42d2d!important}
+#deleteBtn svg,#clearBtn svg{color:#c93434}
+#deleteBtn:hover,#clearBtn:hover{background:#fff0ef!important;border-color:#f2c7c4!important}
+@media(max-width:700px){
+ #editorSlide .slide-item-wrap .block-tools{inset-inline-start:-27px;gap:1px}
+ #editorSlide .slide-item-wrap .block-handle,#editorSlide .slide-item-wrap .block-plus{width:25px;min-width:25px;height:31px;min-height:31px;padding:5px;color:#848484;background:rgba(255,255,255,.86);border:0;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;box-shadow:none}
+ #editorSlide .slide-item-wrap .block-resize{width:23px;height:23px;min-width:23px;min-height:23px;opacity:0;visibility:hidden;pointer-events:none}
+ #editorSlide .slide-item-wrap.block-active .block-handle,#editorSlide .slide-item-wrap.block-active .block-plus,#editorSlide .slide-item-wrap:focus-within .block-handle,#editorSlide .slide-item-wrap:focus-within .block-plus,#editorSlide .slide-item-wrap.block-active .block-resize,#editorSlide .slide-item-wrap:focus-within .block-resize{opacity:1;visibility:visible;pointer-events:auto}
+ #editorSlide .slide-inner-add{opacity:1}
+}
+/* Custom, keyboard-accessible decisions with a press-and-hold destructive action. */
+.decision-overlay{z-index:170}
+.decision-sheet{max-width:410px;padding:24px;gap:0;display:block;overflow:visible}
+.decision-icon{width:39px;height:39px;display:grid;place-items:center;background:#fff1f0;border:1px solid #f9dedb;border-radius:11px;color:#c83737;margin-bottom:16px}
+.decision-icon svg{width:19px;height:19px}
+.decision-sheet[data-mode="notice"] .decision-icon{background:#f3f3f2;border-color:#ededeb;color:#686868}
+.decision-sheet h2{margin:0 0 9px;font-size:21px;font-weight:690;color:#262626;letter-spacing:-.025em}
+.decision-description{margin:0;color:#737373;line-height:1.6;font-size:13px;white-space:pre-line;overflow-wrap:anywhere;max-height:35dvh;overflow:auto}
+.decision-hint{color:#929292;font-size:11px;line-height:1.5;margin:18px 0 0}
+.decision-actions{display:flex;gap:8px;margin-top:21px}
+.decision-actions button{flex:1;min-height:44px;position:relative;overflow:hidden;border-radius:9px;border:1px solid #e4e4e2;font-size:13px;font-weight:630}
+.decision-cancel{background:#fff;color:#454545}
+.decision-cancel:hover{background:#f5f5f4}
+.decision-confirm{background:#bd3030;border-color:#bd3030!important;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.decision-confirm:not(.is-danger){background:#292929;border-color:#292929!important}
+.decision-confirm>span:not(.decision-progress){position:relative;z-index:1;pointer-events:none}
+.decision-progress{position:absolute;inset:0;background:#8b1919;transform:scaleX(0);transform-origin:left center;transition:none;pointer-events:none}
+.decision-confirm.holding .decision-progress{transform:scaleX(1);transition:transform 1.25s linear}
+.decision-confirm:not(.is-danger) .decision-progress{background:#444}
+.decision-confirm:focus-visible,.decision-cancel:focus-visible{outline:2px solid #66778b;outline-offset:2px}
+@media(max-width:700px){.decision-overlay{align-items:flex-end;padding:0}.decision-sheet{max-width:none;width:100%;padding:25px 22px calc(23px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script></head>
 <body>
@@ -808,7 +849,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div></div></div>
 <div id="shortcutsSheet" class="sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle" aria-hidden="true"><div class="sheet shortcuts-sheet"><div class="sheet-head"><div><span class="sheet-kicker">WORK FASTER</span><h2 id="shortcutsTitle">Keyboard shortcuts</h2></div><button class="sheet-close" id="closeShortcuts" aria-label="Close shortcuts"><i data-lucide="x"></i></button></div><div class="sheet-scroll shortcut-content">
 <div class="shortcut-section"><h3>Panels and presentation</h3><div class="shortcut-row"><span>Toggle slide previews</span><kbd>⌘ / Ctrl</kbd><kbd>B</kbd></div><div class="shortcut-row"><span>Toggle Design panel</span><kbd>⌘ / Ctrl</kbd><kbd>Shift</kbd><kbd>B</kbd></div><div class="shortcut-row"><span>Show shortcuts</span><kbd>?</kbd></div><div class="shortcut-row"><span>Present slides</span><kbd>⌘ / Ctrl</kbd><kbd>Enter</kbd></div><div class="shortcut-row"><span>Exit presentation / dismiss menu</span><kbd>Esc</kbd></div><div class="shortcut-row"><span>Next / previous slide (presenting)</span><kbd>→</kbd><kbd>←</kbd></div></div>
-<div class="shortcut-section"><h3>Editing</h3><div class="shortcut-row"><span>Add a new block</span><kbd>⌘ / Ctrl</kbd><kbd>K</kbd></div><div class="shortcut-row"><span>Add a slide</span><kbd>⌘ / Ctrl</kbd><kbd>Shift</kbd><kbd>Enter</kbd></div><div class="shortcut-row"><span>Duplicate selected block / slide</span><kbd>⌘ / Ctrl</kbd><kbd>D</kbd></div><div class="shortcut-row"><span>Remove selected block</span><kbd>Delete</kbd></div><div class="shortcut-row"><span>Deselect / stop editing</span><kbd>Esc</kbd></div><div class="shortcut-row"><span>Move selected block up / down in order</span><kbd>Alt</kbd><kbd>↑</kbd><kbd>↓</kbd></div><div class="shortcut-row"><span>Move selected block on canvas</span><kbd>Arrow keys</kbd></div></div><p class="shortcut-tip">On iPad keyboards and Mac use ⌘; on Windows and Linux use Ctrl. While typing, common text editing shortcuts remain available except the global panel shortcut.</p></div></div></div><div class="toast" id="toast" role="status"></div>
+<div class="shortcut-section"><h3>Editing</h3><div class="shortcut-row"><span>Add a new block</span><kbd>⌘ / Ctrl</kbd><kbd>K</kbd></div><div class="shortcut-row"><span>Add a slide</span><kbd>⌘ / Ctrl</kbd><kbd>Shift</kbd><kbd>Enter</kbd></div><div class="shortcut-row"><span>Duplicate selected block / slide</span><kbd>⌘ / Ctrl</kbd><kbd>D</kbd></div><div class="shortcut-row"><span>Remove selected block</span><kbd>Delete</kbd></div><div class="shortcut-row"><span>Deselect / stop editing</span><kbd>Esc</kbd></div><div class="shortcut-row"><span>Move selected block up / down in order</span><kbd>Alt</kbd><kbd>↑</kbd><kbd>↓</kbd></div><div class="shortcut-row"><span>Move selected block on canvas</span><kbd>Arrow keys</kbd></div></div><p class="shortcut-tip">On iPad keyboards and Mac use ⌘; on Windows and Linux use Ctrl. While typing, common text editing shortcuts remain available except the global panel shortcut.</p></div></div></div><div id="decisionSheet" class="sheet-overlay decision-overlay" role="dialog" aria-modal="true" aria-labelledby="decisionTitle" aria-describedby="decisionDescription" aria-hidden="true">
+ <div class="sheet decision-sheet" data-mode="delete">
+ <div class="decision-icon" aria-hidden="true"><i data-lucide="trash-2"></i></div>
+ <h2 id="decisionTitle">Delete this item?</h2>
+ <p id="decisionDescription" class="decision-description"></p>
+ <p id="decisionHint" class="decision-hint">Press and hold to confirm. Release to cancel.</p>
+ <div class="decision-actions">
+ <button id="decisionCancel" class="decision-cancel" type="button">Cancel</button>
+ <button id="decisionConfirm" class="decision-confirm is-danger" type="button" aria-describedby="decisionHint"><span class="decision-progress" aria-hidden="true"></span><span id="decisionConfirmText">Hold to delete</span></button>
+ </div></div></div>
+<div class="toast" id="toast" role="status"></div>
 <script src="/slyz-pptx-import.js"></script>
 <script src="/slyz-io.js"></script>
 <script>
@@ -846,7 +897,74 @@ function slideDirection(s){if(s.direction==="rtl"||s.direction==="ltr")return s.
 function colorsForSlide(s){const p=PALETTES.find(x=>x.name===s.palette)||PALETTES[0];return {accent:HEX_COLOR.test(s.colors?.accent||"")?s.colors.accent:p.accent,background:HEX_COLOR.test(s.colors?.background||"")?s.colors.background:p.background,text:HEX_COLOR.test(s.colors?.text||"")?s.colors.text:p.text,tint:p.tint};}
 function renderDesignOptions(){const s=current(),grid=$("designGrid"),paletteGrid=$("paletteGrid");grid.innerHTML="";LAYOUTS.forEach(([id,label])=>{const b=document.createElement("button");b.className="design-card"+((s.layout||"minimal")===id?" active":"");b.dataset.layout=id;b.setAttribute("aria-pressed",String((s.layout||"minimal")===id));const v=document.createElement("div");v.className="design-visual";const sp=document.createElement("span");sp.textContent=label;b.append(v,sp);b.onclick=()=>{s.layout=id;render();scheduleSave()};grid.append(b)});paletteGrid.innerHTML="";PALETTES.forEach(p=>{let b=document.createElement("button");b.className="palette-item"+((s.palette||"Ocean")===p.name?" active":"");b.style.background=p.accent;b.title=p.name;b.setAttribute("aria-label",p.name+" color palette");b.setAttribute("aria-pressed",String((s.palette||"Ocean")===p.name));b.onclick=()=>{s.palette=p.name;s.colors=undefined;s.theme=p.theme;render();scheduleSave()};paletteGrid.append(b)});let colors=colorsForSlide(s);$("accentColor").value=colors.accent;$("backgroundColor").value=colors.background;$("textColor").value=colors.text;document.querySelectorAll(".direction [data-direction]").forEach(b=>{b.classList.toggle("active",(s.direction||"auto")===b.dataset.direction);b.setAttribute("aria-pressed",String((s.direction||"auto")===b.dataset.direction))})}
 function applyImportedDeck(raw){const deck=validateDeck(raw);slides=deck;selected=0;render();scheduleSave();notify("Presentation imported")}
-function decodeIncomingHash(){const hash=window.location.hash||"";if(!hash.startsWith("#deck="))return;try{const token=hash.slice(6);if(token.length>45000)throw Error("Link too large; import JSON instead.");const b64=token.replace(/-/g,"+").replace(/_/g,"/");const bin=atob(b64.padEnd(Math.ceil(b64.length/4)*4,"="));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));const raw=JSON.parse(new TextDecoder().decode(bytes));if(!confirm("Import the presentation from this link? Your current deck will be replaced. Export a backup first if needed."))return;applyImportedDeck(raw)}catch(e){notify("Invalid import link: "+(e.message||"error"))}finally{history.replaceState(null,"",location.pathname+location.search)}}
+
+const HOLD_TO_CONFIRM_MS=1250;
+let decisionState=null,holdTimer=null,activeHold=null;
+function stopDecisionHold(){
+ clearTimeout(holdTimer);holdTimer=null;activeHold=null;
+ $("decisionConfirm").classList.remove("holding");
+}
+function closeDecision(confirmed=false){
+ const state=decisionState;if(!state)return;
+ stopDecisionHold();decisionState=null;
+ const overlay=$("decisionSheet");
+ overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");
+ state.resolve(Boolean(confirmed));
+ if(state.returnFocus?.isConnected)state.returnFocus.focus({preventScroll:true});
+}
+function showDecision({title,description,confirmLabel="Delete",danger=true,hold=true,notice=false}){
+ if(decisionState)return Promise.resolve(false);
+ return new Promise(resolve=>{
+  const prior=document.activeElement;
+  decisionState={resolve,returnFocus:prior,hold:hold&&!notice};
+  const sheet=$("decisionSheet"),button=$("decisionConfirm");
+  sheet.querySelector(".decision-sheet").dataset.mode=notice?"notice":"delete";
+  $("decisionTitle").textContent=title;
+  $("decisionDescription").textContent=description||"";
+  $("decisionCancel").hidden=notice;
+  $("decisionHint").hidden=!decisionState.hold;
+  $("decisionHint").textContent="Press and hold for 1.25 seconds to confirm. Release to cancel.";
+  button.classList.toggle("is-danger",danger&&!notice);
+  $("decisionConfirmText").textContent=decisionState.hold?"Hold to "+confirmLabel.toLowerCase():confirmLabel;
+  button.setAttribute("aria-label",decisionState.hold?"Press and hold to "+confirmLabel.toLowerCase():confirmLabel);
+  sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");iconify(sheet);
+  (notice?button:$("decisionCancel")).focus({preventScroll:true});
+ });
+}
+function showNotice(title,message){return showDecision({title,description:message,confirmLabel:"Got it",danger:false,hold:false,notice:true})}
+function startDecisionHold(kind,event){
+ if(!decisionState?.hold||activeHold)return;
+ if(kind==="pointer"&&event.pointerType==="mouse"&&event.button!==0)return;
+ event.preventDefault();
+ const button=$("decisionConfirm");
+ activeHold={kind,id:kind==="pointer"?event.pointerId:null};
+ if(kind==="pointer"){try{button.setPointerCapture(event.pointerId)}catch(err){}}
+ void button.offsetWidth;
+ button.classList.add("holding");
+ holdTimer=setTimeout(()=>{if(activeHold&&decisionState?.hold)closeDecision(true)},HOLD_TO_CONFIRM_MS);
+}
+function bindDecisionDialog(){
+ const overlay=$("decisionSheet"),button=$("decisionConfirm");
+ $("decisionCancel").onclick=()=>closeDecision(false);
+ overlay.onclick=e=>{if(e.target===overlay)closeDecision(false)};
+ button.onclick=()=>{if(decisionState&&!decisionState.hold)closeDecision(true)};
+ button.addEventListener("pointerdown",e=>startDecisionHold("pointer",e));
+ button.addEventListener("pointermove",e=>{
+  if(activeHold?.kind!=="pointer"||activeHold.id!==e.pointerId)return;
+  const r=button.getBoundingClientRect();
+  if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)stopDecisionHold();
+ });
+ button.addEventListener("pointerup",e=>{if(activeHold?.kind==="pointer"&&activeHold.id===e.pointerId)stopDecisionHold()});
+ button.addEventListener("pointercancel",stopDecisionHold);
+ button.addEventListener("lostpointercapture",()=>{if(activeHold?.kind==="pointer")stopDecisionHold()});
+ button.addEventListener("contextmenu",e=>{if(decisionState?.hold)e.preventDefault()});
+ button.addEventListener("keydown",e=>{
+  if(!decisionState?.hold||![" ","Enter"].includes(e.key))return;
+  e.preventDefault();if(!e.repeat)startDecisionHold("keyboard",e);
+ });
+ button.addEventListener("keyup",e=>{if([" ","Enter"].includes(e.key)&&activeHold?.kind==="keyboard"){e.preventDefault();stopDecisionHold()}});
+}
+async function decodeIncomingHash(){const hash=window.location.hash||"";if(!hash.startsWith("#deck="))return;try{const token=hash.slice(6);if(token.length>45000)throw Error("Link too large; import JSON instead.");const b64=token.replace(/-/g,"+").replace(/_/g,"/");const bin=atob(b64.padEnd(Math.ceil(b64.length/4)*4,"="));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));const raw=JSON.parse(new TextDecoder().decode(bytes));if(!confirm("Import the presentation from this link? Your current deck will be replaced. Export a backup first if needed."))return;applyImportedDeck(raw)}catch(e){notify("Invalid import link: "+(e.message||"error"))}finally{history.replaceState(null,"",location.pathname+location.search)}}
 function cleanDefaultDeck(raw){if(!raw||!Array.isArray(raw.slides))return false;const arr=raw.slides;if(arr.length!==12)return false;return arr.some(s=>(s.title==="بداية جديدة"||s.title==="الختام")&&s.blocks?.some(b=>b.text?.includes("وريد")))&&!arr.some(s=>s.blocks?.some(b=>b.type==="image"));}
 
 let slides=defaultSlides(), selected=0, playIndex=0, dragIndex=null, db=null, saveTimer=0, renderScheduled=0;
