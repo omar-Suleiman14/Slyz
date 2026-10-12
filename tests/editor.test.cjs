@@ -47,3 +47,41 @@ test("keeps portable JSON and browser-local persistence", () => {
   assert.match(html, /function importDeck\(/);
   assert.match(html, /#deck=/);
 });
+
+test("images use the same Add Block flow, with no separate Images section", () => {
+  assert.equal((html.match(/data-pick-type="image"/g) || []).length, 1);
+  assert.doesNotMatch(html, /id="dropZone"|id="mediaPickerGroup"|class="field image-field"/);
+  assert.match(html, /image-upload-placeholder/);
+  assert.match(html, /appendBlock\(t\)/);
+  assert.match(html, /if\(!editor&&b\.type==="image"&&!b\.src\)return/);
+  assert.match(html, /function openImageInput\(blockId\)/);
+  assert.match(html, /existing\.src=src/);
+  assert.match(html, /imageFile\(file,undefined,b\.id\)/);
+  assert.match(html, /function beginResize\(/);
+});
+
+test("image placeholders render without broken img tags", () => {
+  const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  const start=js.indexOf("function displayTextBlock(");
+  const end=js.indexOf("function createSlideEl(",start);
+  assert.ok(start>=0&&end>start);
+  let selected=null,upload=null;
+  const doc={createElement:tag=>({
+    tagName:tag,style:{setProperty(){}},dataset:{},setAttribute(){},
+    addEventListener(){},className:"",hidden:false,onclick:null
+  })};
+  const display=new Function("document","selectBlock","openImageInput",
+    js.slice(start,end)+"\nreturn displayTextBlock")(
+      doc,id=>selected=id,id=>upload=id);
+  const block={id:"image-1",type:"image",text:""};
+  const placeholder=display(block,true,0);
+  assert.equal(placeholder.tagName,"button");
+  assert.match(placeholder.className,/image-upload-placeholder/);
+  placeholder.onclick({stopPropagation(){}});
+  assert.equal(selected,"image-1");
+  assert.equal(upload,"image-1");
+  assert.equal(display(block,false,0).hidden,true);
+  const filled=display({...block,src:"data:image/png;base64,abc"},true,0);
+  assert.equal(filled.tagName,"img");
+  assert.equal(filled.src,"data:image/png;base64,abc");
+});
