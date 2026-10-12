@@ -164,3 +164,12 @@ test("Ctrl/Cmd Shift B toggles the right sidebar and Ctrl/Cmd B toggles the left
   assert.equal(hit("b",{ctrlKey:true}), true);
   assert.deepEqual(toggled,["design","design","slides"]);
 });
+
+test("resized sidebars still collapse despite persisted inline widths", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  // These separate calculated widths override saved --slides-w / --design-w values.
+  assert.match(html, /grid-template-columns:var\(--slides-visible-w,var\(--slides-w\)\)/);
+  assert.match(html, /var\(--design-visible-w,var\(--design-w\)\)/);
+  assert.match(html, /\.workspace\[data-design="closed"\]\{--design-visible-w:0px\}/);
+  assert.match(html, /\.workspace\[data-slides="closed"\]\{--slides-visible-w:0px\}/);
+});
