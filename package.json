@@ -1,0 +1,13 @@
+{
+  "name": "slyz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first presentation editor with a stateless MCP server",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check api/mcp.js && npm test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
