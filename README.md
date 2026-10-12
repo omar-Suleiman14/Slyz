@@ -10,6 +10,7 @@ An English-first, mobile-friendly presentation editor with Notion-style draggabl
 ## File structure
 
 - `index.html` — complete front-end editor, styling and browser-local persistence. No bundler needed.\n- `slyz-io.js` — browser-side ZIP project import/export and editable PowerPoint generation.
+- `slyz-pptx-import.js` — client-side PowerPoint XML importer.
 - `api/mcp.js` — Vercel Node.js Function implementing a stateless MCP endpoint over HTTP/JSON-RPC.
 - `tests/mcp.test.cjs` — Node built-in tests for MCP tools and protocol behavior.
 - `README.md` — setup, architecture and safety notes.
@@ -37,7 +38,7 @@ node --test tests/mcp.test.cjs
 1. Connect this repository to a Vercel project (framework preset: **Other**, root: `./`, production branch: `main`).
 2. Confirm that `/` serves `index.html` and `/api/mcp` serves the Node MCP function.
 3. Keep `slyz.vercel.app` assigned to the currently healthy project until the Git-connected deployment is verified. Do not delete the old production project prematurely.
-4. Test Arabic + English slides, mobile drag gestures, ZIP/PPTX export, ZIP and legacy JSON import, IndexedDB saving and MCP create/update operations.
+4. Test Arabic + English slides, mobile drag gestures, ZIP/PPTX export, PPTX/ZIP and legacy JSON import, IndexedDB saving and MCP create/update operations.
 
 The standalone HTML and the API function should remain under one origin to preserve the existing MCP import links. If the origin changes, update the `ORIGIN` constant in `api/mcp.js`.
 
@@ -49,9 +50,12 @@ A different subdomain is a different browser storage origin: export a Slyz ZIP p
 
 ## Import and export
 
+- **PowerPoint import (.pptx):** Import slide text boxes and JPEG/PNG/WebP pictures as editable positioned Slyz blocks. Slide ordering, approximate text hierarchy, RTL text, and simple solid backgrounds are preserved. Unsupported charts, tables, vector drawings, advanced typography, master layouts, animations, and slide effects are not fully converted; a warning appears if elements are omitted. Import runs locally in your browser.
+
 - **Slyz project (.zip):** The recommended portable backup. Contains `project.json`, a human-readable `manifest.json`, and individual image files in `images/`. Reimport the ZIP directly in Slyz to restore editable slide blocks and images; no upload to a server is involved.
 - **PowerPoint (.pptx):** Generates 16:9 slides client-side with editable text, embedded images, colors and basic layout decorations using PptxGenJS. Some CSS-only effects, exact wrapping, and browser animations will differ from the web editor; the PPTX is editable rather than a screenshot of each slide.
 - **Legacy (.json):** Supported for import, including MCP-generated decks. New backups export as ZIP, not JSON.
+- **Shortcuts:** Ctrl/⌘ + B toggles left slide previews; Ctrl/⌘ + Shift + B toggles the right Design sidebar. Some browsers may reserve these shortcuts.
 
 The ZIP/PPTX exporters lazy-load JSZip and PptxGenJS from pinned CDN versions when requested. Exporting therefore needs an internet connection for the first load; slide content remains on-device. Retest exports on Safari/iOS and PowerPoint before relying on them for a live presentation.
 

@@ -116,6 +116,10 @@
 
   async function importFile(file) {
     if (!file) throw Error('Choose a Slyz project.');
+    if (/\.pptx$/i.test(file.name) || file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+      if (typeof root.SlyzPptxImport !== 'function') throw Error('PowerPoint import module is unavailable. Refresh the editor.');
+      return root.SlyzPptxImport(file, await getZip());
+    }
     if (/\.zip$/i.test(file.name) || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
       return importProject(file);
     }
@@ -124,7 +128,7 @@
       if (file.size > 35 * 1024 * 1024) throw Error('JSON backup is too large.');
       return JSON.parse(await file.text());
     }
-    throw Error('Choose a Slyz .zip project or a legacy .json backup.');
+    throw Error('Choose a Slyz .zip project, PowerPoint .pptx, or legacy .json backup.');
   }
 
   const COLORS = [
