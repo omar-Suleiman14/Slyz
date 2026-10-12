@@ -696,14 +696,52 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .slide .slideblock[lang="ar"],.slide .listblock[lang="ar"],.slide .listblock span[lang="ar"]{font-family:"Cairo",Tahoma,sans-serif;letter-spacing:0}
 .slide .slideblock.h1[lang="ar"],.slide .slideblock.h2[lang="ar"]{line-height:1.36}
 .slide .slideblock.p[lang="ar"],.slide .listblock[lang="ar"]{line-height:1.85}
+
+/* Image is a first-class slide item, with inline upload and replacement. */
+.slide-item-wrap:has(>.image-upload-placeholder){width:min(74%,680px)}
+.image-upload-placeholder{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ width:100%;min-height:clamp(130px,23cqw,300px);padding:clamp(15px,2.8cqw,35px);
+ gap:8px;text-align:center;line-height:1.5;direction:ltr;
+ color:#777!important;background:rgba(140,140,140,.045)!important;
+ border:1.5px dashed #c7c7c4!important;border-radius:9px!important;
+ cursor:pointer;box-shadow:none!important;transition:border-color .16s,background .16s;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+}
+.image-upload-placeholder svg{width:26px;height:26px;color:#8b8b8b;stroke-width:1.5;margin-bottom:2px}
+.image-upload-placeholder strong{font-size:clamp(12px,1.5cqw,17px);font-weight:630;color:#555}
+.image-upload-placeholder span{font-size:clamp(10px,1.2cqw,14px);color:#777}
+.image-upload-placeholder small{font-size:clamp(9px,1cqw,12px);color:#999}
+.image-upload-placeholder:hover,.image-upload-placeholder:focus-visible,.slide-item-wrap.image-drop-active .image-upload-placeholder{
+ border-color:#888b91!important;background:rgba(120,130,140,.09)!important;
+}
+.slide-item-wrap.image-drop-active{outline:2px solid #9099a5;outline-offset:4px}
+.slide-item-wrap.image-drop-active img.imageblock{filter:brightness(.9)}
+.slide-item-wrap.floating>.image-upload-placeholder{height:100%;min-height:100%}
+.block-action-bar .block-replace-image{background:#f7f7f6;border:1px solid #e6e6e3;font-size:11px;color:#555;min-height:36px}
+.block-action-bar .block-replace-image:hover{background:#efefec}
+.block-action-bar .block-replace-image[hidden]{display:none!important}
+.block-image-action{
+ flex:1;min-width:0;text-align:start;border:0;border-radius:5px;
+ background:transparent;color:#767676;font-size:12px;padding:7px 5px;cursor:pointer;
+}
+.block-image-action:hover{background:#ededeb;color:#333}
+@media(max-width:700px){
+ #editorSlide .slide-item-wrap:has(>.image-upload-placeholder){width:min(92%,450px)}
+ #editorSlide .image-upload-placeholder{min-height:170px;padding:16px 11px;gap:7px}
+ #editorSlide .image-upload-placeholder strong{font-size:14px}
+ #editorSlide .image-upload-placeholder span{font-size:12px}
+ #editorSlide .image-upload-placeholder small{font-size:10px}
+ .block-action-bar .block-replace-image{min-width:0;padding:8px}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script></head>
 <body>
 <header class="topbar"><div class="brand"><div class="mark"><i data-lucide="panels-top-left"></i></div><div><strong>Slide Studio</strong><small>Workspace</small></div></div><span class="pill" id="saveState" aria-live="polite">Saved locally</span><div class="top-actions"><button class="btn optional" id="exportBtn"><i data-lucide="download"></i><span>Export</span></button><button class="btn optional" id="importBtn"><i data-lucide="upload"></i><span>Import</span></button><button class="btn mcp-launch" id="mcpBtn" title="AI integrations" aria-label="AI integrations"><i data-lucide="plug"></i><span>Connect AI</span></button><button class="btn primary" id="playBtn"><i data-lucide="play"></i><span>Present</span></button></div></header>
 <div class="workspace" id="workspace" data-panel="edit" data-slides="open" data-design="open"><div id="sidebarResizer" class="panel-resizer left-resizer" role="separator" aria-label="Resize slide previews" aria-orientation="vertical" tabindex="0"><span></span></div><div id="designResizer" class="panel-resizer right-resizer" role="separator" aria-label="Resize design sidebar" aria-orientation="vertical" tabindex="0"><span></span></div>
 <aside class="sidebar" id="slidesPanel"><div class="sideheader"><div><small>YOUR DECK</small><h2>Slides <span id="slideCount">0</span></h2></div><div class="header-inline"><button id="collapseSlidesBtn" class="btn iconbtn" title="Collapse slide previews (⌘B)" aria-label="Collapse slide previews"><i data-lucide="panel-left-close"></i></button><button id="addSlideBtn" class="btn iconbtn" aria-label="Add slide"><i data-lucide="plus"></i></button></div></div><div id="slideList" class="slides-list"></div><p class="footer-note sidebar-hint">Drag a slide to reorder <span aria-hidden="true">·</span> <kbd>⌘B</kbd> to collapse</p></aside>
-<main class="main" id="mainCanvas"><div class="mainhead"><div class="mainhead-left"><button id="toggleSlidesBtn" class="btn iconbtn header-toggle" title="Show/hide slide previews (⌘B)" aria-label="Toggle slide previews"><i data-lucide="panel-left"></i></button><div><small>EDITOR</small><h1 id="currentTitle">Presentation</h1></div></div><div class="mainhead-right"><span class="eyebrow" id="slidePosition">01 / 04</span><button id="toggleDesignBtn" class="btn iconbtn header-toggle" title="Show/hide Design panel (⌘⇧B)" aria-label="Toggle Design panel"><i data-lucide="panel-right"></i></button><button id="shortcutHelpBtn" class="btn iconbtn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button></div></div><div class="canvas-shell" id="canvasShell"><div id="editorSlide"></div><div id="blockActionBar" class="block-action-bar" hidden><span id="selectedBlockLabel">Text</span><button class="btn conversion-btn" id="turnIntoBtn"><i data-lucide="repeat-2"></i><span>Turn into…</span><i data-lucide="chevron-down"></i></button><button class="btn conversion-delete" id="removeSelectedBlock" title="Delete selected block" aria-label="Delete selected block"><i data-lucide="trash-2"></i></button></div></div><p class="editor-help">Drag the <strong>six-dot handle</strong> to move a block. Drop an image anywhere on the slide, then drag its corner to resize. Click empty space to deselect.</p></main>
-<aside class="inspector" id="inspectorPanel"><div class="sideheader"><div><small>APPEARANCE</small><h2>Design</h2></div><i data-lucide="sliders-horizontal"></i></div><div class="field"><label>Slide name</label><input id="slideTitleInput" autocomplete="off"></div><div class="field"><label>Layout</label><div id="designGrid" class="design-grid"></div></div><div class="field"><label>Color palette</label><div id="paletteGrid" class="palette-grid"></div></div><div class="field"><label>Custom colors</label><div class="color-grid"><label>Accent <input type="color" id="accentColor"></label><label>Background <input type="color" id="backgroundColor"></label><label>Text <input type="color" id="textColor"></label></div><button id="resetColors" class="btn simple" style="width:100%">Reset custom colors</button></div><div class="field"><label>Surface</label><div class="tones"><button class="tone light" data-theme="light" title="Light"></button><button class="tone mint" data-theme="mint" title="Mint"></button><button class="tone dark" data-theme="dark" title="Dark"></button><button class="tone black" data-theme="black" title="Black"></button></div></div><div class="field"><label>Alignment</label><div class="stackrow"><button id="alignStart" class="btn"><i data-lucide="align-left"></i> Start</button><button id="alignCenter" class="btn"><i data-lucide="align-center"></i> Center</button></div></div><div class="field"><label>Text direction</label><div class="stackrow direction"><button class="btn" data-direction="auto">Auto</button><button class="btn" data-direction="ltr">LTR</button><button class="btn" data-direction="rtl">RTL</button></div><small class="hint">Automatic Arabic/English detection or manual override.</small></div><h2 class="section-title">Content <button class="btn iconbtn" id="addTextBtn" aria-label="Add text"><i data-lucide="plus"></i></button></h2><div id="blocksList" class="blocklist"></div><div class="field image-field"><label>Images</label><label class="dropzone" id="dropZone" for="imageInput"><i data-lucide="image-plus"></i><span>Drop an image or browse</span><small>JPG, PNG, WebP · 8MB max</small></label></div><div class="stackrow edit-actions"><button class="btn" id="duplicateBtn"><i data-lucide="copy"></i> Duplicate</button><button class="btn danger" id="deleteBtn"><i data-lucide="trash-2"></i> Delete</button></div><h2 class="section-title">Your data</h2><div class="stack"><button class="btn" id="moreExportBtn"><i data-lucide="download"></i> Export JSON</button><button class="btn" id="moreImportBtn"><i data-lucide="upload"></i> Import JSON</button><button class="btn danger" id="clearBtn"><i data-lucide="file-plus-2"></i> Start a new deck</button></div><div class="integration-section"><h2 class="section-title"><i data-lucide="plug-zap"></i> Connect AI</h2><p class="footer-note">Let ChatGPT or other MCP clients create slides you can import locally.</p><button class="btn integration-connect" id="connectMcpBtn"><i data-lucide="plug"></i> Connect AI <i data-lucide="arrow-up-right"></i></button></div><p class="footer-note">Everything stays on this device. Export a backup to move your deck elsewhere.</p></aside>
+<main class="main" id="mainCanvas"><div class="mainhead"><div class="mainhead-left"><button id="toggleSlidesBtn" class="btn iconbtn header-toggle" title="Show/hide slide previews (⌘B)" aria-label="Toggle slide previews"><i data-lucide="panel-left"></i></button><div><small>EDITOR</small><h1 id="currentTitle">Presentation</h1></div></div><div class="mainhead-right"><span class="eyebrow" id="slidePosition">01 / 04</span><button id="toggleDesignBtn" class="btn iconbtn header-toggle" title="Show/hide Design panel (⌘⇧B)" aria-label="Toggle Design panel"><i data-lucide="panel-right"></i></button><button id="shortcutHelpBtn" class="btn iconbtn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button></div></div><div class="canvas-shell" id="canvasShell"><div id="editorSlide"></div><div id="blockActionBar" class="block-action-bar" hidden><span id="selectedBlockLabel">Text</span><button class="btn block-replace-image" id="replaceImageBtn" hidden><i data-lucide="image-up"></i><span>Replace image</span></button><button class="btn conversion-btn" id="turnIntoBtn"><i data-lucide="repeat-2"></i><span>Turn into…</span><i data-lucide="chevron-down"></i></button><button class="btn conversion-delete" id="removeSelectedBlock" title="Delete selected block" aria-label="Delete selected block"><i data-lucide="trash-2"></i></button></div></div><p class="editor-help">Drag the <strong>six-dot handle</strong> to move a block. Drop an image anywhere on the slide, then drag its corner to resize. Click empty space to deselect.</p></main>
+<aside class="inspector" id="inspectorPanel"><div class="sideheader"><div><small>APPEARANCE</small><h2>Design</h2></div><i data-lucide="sliders-horizontal"></i></div><div class="field"><label>Slide name</label><input id="slideTitleInput" autocomplete="off"></div><div class="field"><label>Layout</label><div id="designGrid" class="design-grid"></div></div><div class="field"><label>Color palette</label><div id="paletteGrid" class="palette-grid"></div></div><div class="field"><label>Custom colors</label><div class="color-grid"><label>Accent <input type="color" id="accentColor"></label><label>Background <input type="color" id="backgroundColor"></label><label>Text <input type="color" id="textColor"></label></div><button id="resetColors" class="btn simple" style="width:100%">Reset custom colors</button></div><div class="field"><label>Surface</label><div class="tones"><button class="tone light" data-theme="light" title="Light"></button><button class="tone mint" data-theme="mint" title="Mint"></button><button class="tone dark" data-theme="dark" title="Dark"></button><button class="tone black" data-theme="black" title="Black"></button></div></div><div class="field"><label>Alignment</label><div class="stackrow"><button id="alignStart" class="btn"><i data-lucide="align-left"></i> Start</button><button id="alignCenter" class="btn"><i data-lucide="align-center"></i> Center</button></div></div><div class="field"><label>Text direction</label><div class="stackrow direction"><button class="btn" data-direction="auto">Auto</button><button class="btn" data-direction="ltr">LTR</button><button class="btn" data-direction="rtl">RTL</button></div><small class="hint">Automatic Arabic/English detection or manual override.</small></div><h2 class="section-title">Content <button class="btn iconbtn" id="addTextBtn" aria-label="Add text"><i data-lucide="plus"></i></button></h2><div id="blocksList" class="blocklist"></div><div class="stackrow edit-actions"><button class="btn" id="duplicateBtn"><i data-lucide="copy"></i> Duplicate</button><button class="btn danger" id="deleteBtn"><i data-lucide="trash-2"></i> Delete</button></div><h2 class="section-title">Your data</h2><div class="stack"><button class="btn" id="moreExportBtn"><i data-lucide="download"></i> Export JSON</button><button class="btn" id="moreImportBtn"><i data-lucide="upload"></i> Import JSON</button><button class="btn danger" id="clearBtn"><i data-lucide="file-plus-2"></i> Start a new deck</button></div><div class="integration-section"><h2 class="section-title"><i data-lucide="plug-zap"></i> Connect AI</h2><p class="footer-note">Let ChatGPT or other MCP clients create slides you can import locally.</p><button class="btn integration-connect" id="connectMcpBtn"><i data-lucide="plug"></i> Connect AI <i data-lucide="arrow-up-right"></i></button></div><p class="footer-note">Everything stays on this device. Export a backup to move your deck elsewhere.</p></aside>
 </div>
 <nav class="mobile-dock"><button data-panel="slides"><i data-lucide="layers"></i><span>Slides</span></button><button data-panel="edit" class="active"><i data-lucide="pen-line"></i><span>Edit</span></button><button data-panel="design"><i data-lucide="palette"></i><span>Design</span></button><button id="mobilePlayBtn"><i data-lucide="play"></i><span>Present</span></button></nav>
 <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"><input id="importInput" type="file" accept="application/json,.json">
@@ -808,6 +846,8 @@ function chosen(){return current().blocks.find(x=>x.id===selectedBlockId)}
 function markSelection(){
  const x=chosen(),bar=$("blockActionBar");bar.hidden=!x;
  if(x)$("selectedBlockLabel").textContent=blockNames[x.type]||"Block";
+ $("replaceImageBtn").hidden=!x||x.type!=="image";
+ if(x&&x.type==="image")$("replaceImageBtn").querySelector("span").textContent=x.src?"Replace image":"Upload image";
  document.querySelectorAll("#editorSlide .slide-item-wrap[data-block-id]").forEach(e=>e.classList.toggle("block-active",!!x&&e.dataset.blockId===x.id));
 }
 function selectBlock(id){selectedBlockId=id;markSelection()}
@@ -816,7 +856,7 @@ function showPicker(mode){
  pickerMode=mode;pickerReturn=document.activeElement;
  $("blockPickerTitle").textContent=mode==="turn"?"Turn into…":"Add content";
  $("pickerKicker").textContent=mode==="turn"?"CHANGE BLOCK TYPE":"INSERT INTO SLIDE";
- $("mediaPickerGroup").hidden=mode==="turn";
+ $("mediaPickerGroup").hidden=false;
  $("blockPicker").classList.add("open");$("blockPicker").setAttribute("aria-hidden","false");$("closeBlockPicker").focus();
 }
 function hidePicker(){
@@ -824,9 +864,12 @@ function hidePicker(){
  if(pickerReturn?.isConnected)pickerReturn.focus({preventScroll:true});pickerReturn=null;
 }
 function pickBlock(t){
- if(t==="image"){hidePicker();$("imageInput").click();return}
- if(pickerMode==="turn"){const b=chosen();if(!b)return hidePicker();if(b.type==="image")return notify("Images cannot turn into text");b.type=t;render();selectBlock(b.id);scheduleSave()}
- else {appendBlock(t);markSelection()}
+ if(pickerMode==="turn"){
+  const b=chosen();if(!b)return hidePicker();
+  b.type=t;insertAfterId=null;render();selectBlock(b.id);scheduleSave();
+ }else{
+  appendBlock(t);markSelection();
+ }
  hidePicker();
 }
 function showMcp(){$("mcpSheet").classList.add("open");$("mcpSheet").setAttribute("aria-hidden","false");$("closeMcpSheet").focus()}
@@ -1075,7 +1118,22 @@ function dbGet(){return new Promise((res,rej)=>{let tx=db.transaction('decks','r
 function dbSet(value){return new Promise((res,rej)=>{let tx=db.transaction('decks','readwrite');tx.objectStore('decks').put(value,STORAGE_KEY);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
 function backupData(){return {version:VERSION,exportedAt:new Date().toISOString(),slides}}
 function scheduleSave(){clearTimeout(saveTimer);$('saveState').textContent='Saving…';saveTimer=setTimeout(async()=>{try{if(db)await dbSet(backupData());else localStorage.setItem(STORAGE_DB,JSON.stringify(backupData()));$('saveState').textContent='Saved locally'}catch(err){$('saveState').textContent='Save failed';notify('Device storage is full. Export a backup or remove images.')}},350)}
-function displayTextBlock(b,editor,i){const el=document.createElement('div');el.className='slideblock '+b.type;el.setAttribute('dir','auto');if(/[\u0600-\u06ff]/.test(b.text||''))el.lang='ar';el.style.setProperty('--order',i);if(b.type==='ul'||b.type==='ol'){let list=document.createElement(b.type);if(editor){list.dataset.blockId=b.id;list.addEventListener('click',()=>selectBlock(b.id))}list.className='listblock';list.dir='auto';if(/[\u0600-\u06ff]/.test(b.text||''))list.lang='ar';list.style.setProperty('--order',i);for(const line of b.text.split('\n').filter(s=>s.trim())){const li=document.createElement('li');let span=document.createElement('span');span.dir='auto';if(/[\u0600-\u06ff]/.test(line))span.lang='ar';span.textContent=line;li.append(span);list.appendChild(li)}if(editor){list.contentEditable='true';list.setAttribute('role','textbox');list.setAttribute('aria-label','Edit list items');list.oninput=()=>{b.text=clampText(Array.from(list.querySelectorAll('li')).map(x=>x.textContent||'').join('\n'));scheduleSave();syncBlockInput(b.id,b.text)};list.onpaste=e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text/plain'))}}return list}if(b.type==='image'){let img=document.createElement('img');if(editor){img.dataset.blockId=b.id;img.addEventListener('click',()=>selectBlock(b.id))}img.className='imageblock';img.style.setProperty('--order',i);img.alt='Slide image';img.src=b.src||'';if(editor)img.title='Drop another image to add it to the slide';return img}el.textContent=b.text|| (editor?'Tap to edit...':'');if(editor){el.dataset.blockId=b.id;el.addEventListener('click',()=>selectBlock(b.id));el.contentEditable='true';el.setAttribute('role','textbox');el.setAttribute('aria-label','Edit '+b.type);el.spellcheck=true;el.oninput=()=>{b.text=clampText(el.innerText.replace(/\r/g,''));if(/[\u0600-\u06ff]/.test(b.text))el.lang='ar';else el.removeAttribute('lang');scheduleSave();renderListNames();syncBlockInput(b.id,b.text)};el.onpaste=e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)};el.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();el.blur()}}}return el}
+function displayTextBlock(b,editor,i){const el=document.createElement('div');el.className='slideblock '+b.type;el.setAttribute('dir','auto');if(/[\u0600-\u06ff]/.test(b.text||''))el.lang='ar';el.style.setProperty('--order',i);if(b.type==='ul'||b.type==='ol'){let list=document.createElement(b.type);if(editor){list.dataset.blockId=b.id;list.addEventListener('click',()=>selectBlock(b.id))}list.className='listblock';list.dir='auto';if(/[\u0600-\u06ff]/.test(b.text||''))list.lang='ar';list.style.setProperty('--order',i);for(const line of b.text.split('\n').filter(s=>s.trim())){const li=document.createElement('li');let span=document.createElement('span');span.dir='auto';if(/[\u0600-\u06ff]/.test(line))span.lang='ar';span.textContent=line;li.append(span);list.appendChild(li)}if(editor){list.contentEditable='true';list.setAttribute('role','textbox');list.setAttribute('aria-label','Edit list items');list.oninput=()=>{b.text=clampText(Array.from(list.querySelectorAll('li')).map(x=>x.textContent||'').join('\n'));scheduleSave();syncBlockInput(b.id,b.text)};list.onpaste=e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text/plain'))}}return list}if(b.type==='image'){
+ if(!b.src){
+  if(!editor){const empty=document.createElement('span');empty.hidden=true;return empty}
+  const placeholder=document.createElement('button');
+  placeholder.type='button';placeholder.className='imageblock image-upload-placeholder';
+  placeholder.dataset.blockId=b.id;placeholder.dir='ltr';
+  placeholder.setAttribute('aria-label','Choose or drop an image into this block');
+  placeholder.innerHTML='<i data-lucide="image-plus"></i><strong>Add an image</strong><span>Drop an image here, or click to upload</span><small>JPG, PNG, WebP · 8 MB max</small>';
+  placeholder.onclick=e=>{e.stopPropagation();selectBlock(b.id);openImageInput(b.id)};
+  return placeholder;
+ }
+ const img=document.createElement('img');img.className='imageblock';img.alt=b.text||'Slide image';img.src=b.src;
+ img.style.setProperty('--order',i);
+ if(editor){img.dataset.blockId=b.id;img.addEventListener('click',()=>selectBlock(b.id));img.title='Select image · use Replace image to change'}
+ return img;
+}el.textContent=b.text|| (editor?'Tap to edit...':'');if(editor){el.dataset.blockId=b.id;el.addEventListener('click',()=>selectBlock(b.id));el.contentEditable='true';el.setAttribute('role','textbox');el.setAttribute('aria-label','Edit '+b.type);el.spellcheck=true;el.oninput=()=>{b.text=clampText(el.innerText.replace(/\r/g,''));if(/[\u0600-\u06ff]/.test(b.text))el.lang='ar';else el.removeAttribute('lang');scheduleSave();renderListNames();syncBlockInput(b.id,b.text)};el.onpaste=e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)};el.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();el.blur()}}}return el}
 function createSlideEl(slide,editor){
  const shell=document.createElement("div");
  shell.className="slide "+slide.theme+" "+(slide.align==="center"?"center":"")+" layout-"+(slide.layout||"minimal");
@@ -1087,6 +1145,7 @@ function createSlideEl(slide,editor){
  const inner=document.createElement("div");inner.className="slide-inner";
  const layer=document.createElement("div");layer.className="slide-free-layer";layer.setAttribute("aria-hidden","false");
  slide.blocks.forEach((b,i)=>{
+  if(!editor&&b.type==="image"&&!b.src)return;
   const wrap=document.createElement("div");wrap.className="slide-item-wrap";
   wrap.dataset.blockId=b.id;wrap.dataset.order=String(i);wrap.dir=shell.dir;
   const content=displayTextBlock(b,editor,i);
@@ -1094,6 +1153,12 @@ function createSlideEl(slide,editor){
   else inner.append(wrap);
   wrap.append(content);
   if(editor){
+   if(b.type==="image"){
+    wrap.addEventListener("dragenter",e=>{if(!Array.from(e.dataTransfer?.types||[]).includes("Files"))return;e.preventDefault();wrap.classList.add("image-drop-active")});
+    wrap.addEventListener("dragover",e=>{if(!Array.from(e.dataTransfer?.types||[]).includes("Files"))return;e.preventDefault();e.stopPropagation();e.dataTransfer.dropEffect="copy";wrap.classList.add("image-drop-active")});
+    wrap.addEventListener("dragleave",e=>{if(!wrap.contains(e.relatedTarget))wrap.classList.remove("image-drop-active")});
+    wrap.addEventListener("drop",e=>{const file=e.dataTransfer?.files?.[0];if(!file)return;e.preventDefault();e.stopPropagation();wrap.classList.remove("image-drop-active");imageFile(file,undefined,b.id)});
+   }
    wrap.addEventListener("click",e=>{if(e.target.closest(".block-handle,.block-resize,.block-plus"))return;selectBlock(b.id)});
    const controls=document.createElement("div");controls.className="block-tools";
    const plus=document.createElement("button");plus.type="button";plus.className="block-plus";plus.title="Add block below";plus.setAttribute("aria-label","Add block after "+(blockNames[b.type]||"item"));plus.innerHTML='<i data-lucide="plus"></i>';
@@ -1189,14 +1254,22 @@ function renderBlocksList(){
   const ico={h1:"heading-1",h2:"heading-2",p:"align-left",kicker:"case-upper",ul:"list",ol:"list-ordered",quote:"quote",stat:"hash",caption:"text",image:"image"};
   typeBtn.innerHTML='<i data-lucide="'+(ico[b.type]||"type")+'"></i><i data-lucide="chevron-down"></i>';
   typeBtn.onclick=()=>{selectBlock(b.id);showPicker("turn")};
-  const input=document.createElement("input");input.type="text";input.dataset.inputId=b.id;input.value=b.type==="image"?"Image":b.text.replace(/\n/g," ↵ ").slice(0,100);
-  input.disabled=b.type==="image";input.setAttribute("aria-label","Edit "+(blockNames[b.type]||"block")+" content");
-  input.onfocus=()=>selectBlock(b.id);
-  input.onchange=()=>{b.text=clampText(input.value.replace(/ ↵ /g,"\n"));renderCanvas();scheduleSave()};
+  let field;
+  if(b.type==="image"){
+   field=document.createElement("button");field.type="button";field.className="block-image-action";
+   field.textContent=b.src?"Replace image":"Upload image";
+   field.setAttribute("aria-label",(b.src?"Replace":"Upload")+" image in slide block");
+   field.onclick=()=>{selectBlock(b.id);openImageInput(b.id)};
+  }else{
+   field=document.createElement("input");field.type="text";field.dataset.inputId=b.id;
+   field.value=b.text.replace(/\n/g," ↵ ").slice(0,100);field.setAttribute("aria-label","Edit "+(blockNames[b.type]||"block")+" content");
+   field.onfocus=()=>selectBlock(b.id);
+   field.onchange=()=>{b.text=clampText(field.value.replace(/ ↵ /g,"\n"));renderCanvas();scheduleSave()};
+  }
   const up=document.createElement("button");up.className="mini";up.innerHTML='<i data-lucide="arrow-up"></i>';up.title="Move block up";up.onclick=()=>moveBlock(i,-1);
   const down=document.createElement("button");down.className="mini";down.innerHTML='<i data-lucide="arrow-down"></i>';down.title="Move block down";down.onclick=()=>moveBlock(i,1);
   const del=document.createElement("button");del.className="mini";del.innerHTML='<i data-lucide="trash-2"></i>';del.title="Remove block";del.onclick=()=>{selectedBlockId=null;current().blocks.splice(i,1);render();scheduleSave()};
-  row.append(typeBtn,input,up,down,del);list.append(row);
+  row.append(typeBtn,field,up,down,del);list.append(row);
  });
 }
 function moveBlock(i,delta){const j=i+delta;if(j<0||j>=current().blocks.length)return;rememberBlockRects();const [b]=current().blocks.splice(i,1);current().blocks.splice(j,0,b);selectedBlockId=b.id;render();scheduleSave()}
@@ -1227,13 +1300,31 @@ function showPlay(){
 function step(n){let x=playIndex+n;if(x>=slides.length){closePlay();return}playIndex=Math.max(0,x);showPlay()}
 function closePlay(){$('player').classList.remove('on');document.body.style.overflow='';if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
 async function prepareImage(file){if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Use JPG, PNG or WebP images');if(file.size>8*1024*1024)throw Error('Images must be smaller than 8 MB');let img=await new Promise((res,rej)=>{const i=new Image();let url=URL.createObjectURL(file);i.onload=()=>{URL.revokeObjectURL(url);res(i)};i.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Image could not be opened'))};i.src=url});const ratio=Math.min(1,1800/Math.max(img.naturalWidth,img.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/jpeg',.83)}
-async function imageFile(file,position){
- try{const src=await prepareImage(file);if(current().blocks.length>=45)return notify("Too many elements");
- const b={id:uid(),type:"image",text:"",src,...(position?{position}:{})};
- const at=insertAfterId?current().blocks.findIndex(x=>x.id===insertAfterId):-1;
- current().blocks.splice(at<0?current().blocks.length:at+1,0,b);
- insertAfterId=null;selectedBlockId=b.id;render();scheduleSave();notify("Image saved locally");
- }catch(e){notify(e.message||"Could not add image")}
+let requestedImageBlockId=null;
+function openImageInput(blockId){
+ if(!current().blocks.some(b=>b.id===blockId&&b.type==="image"))return;
+ requestedImageBlockId=blockId;const input=$("imageInput");input.value="";input.click();
+}
+async function imageFile(file,position,targetBlockId=null){
+ if(!file)return;
+ const slideId=current().id;
+ try{
+  const src=await prepareImage(file);const slide=slides.find(s=>s.id===slideId);
+  if(!slide)return;
+  if(targetBlockId){
+   const existing=slide.blocks.find(b=>b.id===targetBlockId&&b.type==="image");
+   if(!existing)return notify("That image block is no longer available");
+   existing.src=src;
+   if(current().id===slideId){selectedBlockId=existing.id;render()}
+  }else{
+   if(slide.blocks.length>=45)return notify("Slide is full");
+   const image={id:uid(),type:"image",text:"",src,...(position?{position}:{})};
+   const index=insertAfterId?slide.blocks.findIndex(b=>b.id===insertAfterId):-1;
+   slide.blocks.splice(index<0?slide.blocks.length:index+1,0,image);insertAfterId=null;
+   if(current().id===slideId){selectedBlockId=image.id;render()}
+  }
+  scheduleSave();notify("Image saved locally");
+ }catch(err){notify(err.message||"Could not add image")}
 }
 function download(name,data,mime){const blob=new Blob([data],{type:mime});let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function exportDeck(){download("slide-studio-deck.json",JSON.stringify(backupData(),null,2),"application/json");notify("Presentation exported")}
@@ -1279,10 +1370,8 @@ function bind(){
  $("duplicateBtn").onclick=duplicate;$("deleteBtn").onclick=remove;
  $("playBtn").onclick=play;$("exitBtn").onclick=closePlay;$("prevBtn").onclick=()=>step(-1);$("nextBtn").onclick=()=>step(1);
  $("fullscreenBtn").onclick=()=>{if(!document.fullscreenElement)$("player").requestFullscreen?.().catch(()=>notify("Fullscreen isn't available here"));else document.exitFullscreen().catch(()=>{})};
- $("imageInput").onchange=e=>{imageFile(e.target.files[0]);e.target.value=""};
- $("dropZone").ondragover=e=>{e.preventDefault();e.currentTarget.style.borderColor="#00897d"};
- $("dropZone").ondragleave=e=>e.currentTarget.style.borderColor="";
- $("dropZone").ondrop=e=>{e.preventDefault();e.currentTarget.style.borderColor="";imageFile(e.dataTransfer.files[0])};
+ $("replaceImageBtn").onclick=()=>{const b=chosen();if(b?.type==="image")openImageInput(b.id)};
+ $("imageInput").onchange=e=>{const file=e.target.files?.[0],target=requestedImageBlockId;requestedImageBlockId=null;e.target.value="";if(file)imageFile(file,undefined,target)};
  $("canvasShell").ondragover=e=>{if(e.dataTransfer.types.includes("Files"))e.preventDefault()};
  $("canvasShell").ondrop=e=>{
  if(!e.dataTransfer.files.length)return;e.preventDefault();
