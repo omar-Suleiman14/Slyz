@@ -85,3 +85,58 @@ test("image placeholders render without broken img tags", () => {
   assert.equal(filled.tagName,"img");
   assert.equal(filled.src,"data:image/png;base64,abc");
 });
+
+test("destructive actions use an in-app accessible hold-confirmation dialog", () => {
+  const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  for(const id of ["decisionSheet","decisionTitle","decisionDescription","decisionConfirm","decisionCancel","decisionHint"]){
+    assert.ok(html.includes('id="'+id+'"'),"Missing dialog element: "+id);
+  }
+  assert.match(html,/id="decisionSheet"[^>]*role="dialog"[^>]*aria-modal="true"/);
+  assert.match(js,/const HOLD_TO_CONFIRM_MS=1250/);
+  assert.match(js,/button\.addEventListener\("pointercancel",stopDecisionHold\)/);
+  assert.match(js,/button\.addEventListener\("keyup"/);
+  assert.match(js,/async function deleteBlockById\(id\)/);
+  assert.match(js,/async function remove\(\)/);
+  assert.match(js,/await showDecision\(/);
+  assert.doesNotMatch(js,/\b(?:window\.)?(?:confirm|alert|prompt)\s*\(/);
+  assert.match(html,/#removeSelectedBlock,\.blockrow \.mini\.delete-mini\{color:#c93434!important\}/);
+  assert.match(html,/#editorSlide \.slide-item-wrap\.block-active \.block-handle/);
+});
+
+test("releasing the confirmation button early never deletes", async () => {
+  const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  const start=js.indexOf("const HOLD_TO_CONFIRM_MS=");
+  const end=js.indexOf("async function decodeIncomingHash()",start);
+  assert.ok(start>=0&&end>start);
+  const elements={};
+  const doc={activeElement:null};
+  function makeEl(id){
+    const names=new Set();
+    return elements[id]={
+      hidden:false,dataset:{},isConnected:true,
+      classList:{add:name=>names.add(name),remove:name=>names.delete(name),contains:name=>names.has(name),toggle:(name,on)=>on?names.add(name):names.delete(name)},
+      setAttribute(){},addEventListener(name,fn){this[name]=fn},
+      focus(){doc.activeElement=this},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:50}},
+      setPointerCapture(){},querySelector(){return elements.inner},
+      textContent:"",offsetWidth:30
+    };
+  }
+  for(const id of ["decisionSheet","decisionConfirm","decisionCancel","decisionTitle","decisionDescription","decisionHint","decisionConfirmText","inner"]){makeEl(id)}
+  const pending=[];
+  const fakeSetTimeout=fn=>{pending.push(fn);return pending.length};
+  const api=new Function("$","document","iconify","setTimeout","clearTimeout",
+    js.slice(start,end)+"\nreturn {showDecision,bindDecisionDialog,closeDecision};")(
+      id=>elements[id],doc,()=>{},fakeSetTimeout,()=>{});
+  api.bindDecisionDialog();
+  const result=api.showDecision({title:"Delete?",description:"A block",confirmLabel:"Delete"});
+  const button=elements.decisionConfirm;
+  const event={pointerType:"touch",pointerId:7,clientX:20,clientY:20,preventDefault(){}};
+  button.pointerdown(event);
+  button.pointerup(event);
+  pending[0]();
+  assert.ok(elements.decisionSheet.classList.contains("open"),"Early release must leave dialog open");
+  button.pointerdown(event);
+  pending[1]();
+  assert.equal(await result,true,"Full hold must confirm");
+  assert.ok(!elements.decisionSheet.classList.contains("open"),"Confirmed dialog closes");
+});
