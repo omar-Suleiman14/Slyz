@@ -750,11 +750,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div class="sheet" role="document">
 <div class="sheet-head"><div><span class="sheet-kicker" id="pickerKicker">INSERT INTO SLIDE</span><h2 id="blockPickerTitle">Add content</h2></div><button class="sheet-close" id="closeBlockPicker" aria-label="Close menu"><i data-lucide="x"></i></button></div>
 <div class="sheet-scroll">
-<div class="picker-group"><h3>Text</h3><div class="picker-grid">
+<div class="picker-group"><h3>Blocks</h3><div class="picker-grid">
 <button data-pick-type="h1"><i data-lucide="heading-1"></i><span><b>Heading</b><small>Big, bold headline</small></span></button>
 <button data-pick-type="h2"><i data-lucide="heading-2"></i><span><b>Subheading</b><small>Supporting title</small></span></button>
 <button data-pick-type="p"><i data-lucide="align-left"></i><span><b>Paragraph</b><small>Body copy</small></span></button>
 <button data-pick-type="kicker"><i data-lucide="case-upper"></i><span><b>Eyebrow</b><small>Small section label</small></span></button>
+<button data-pick-type="image"><i data-lucide="image-plus"></i><span><b>Image</b><small>Inline upload or drop zone</small></span></button>
 </div></div>
 <div class="picker-group"><h3>Lists</h3><div class="picker-grid">
 <button data-pick-type="ul"><i data-lucide="list"></i><span><b>Bulleted list</b><small>Key points</small></span></button>
@@ -765,7 +766,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <button data-pick-type="stat"><i data-lucide="hash"></i><span><b>Big number</b><small>Metrics and figures</small></span></button>
 <button data-pick-type="caption"><i data-lucide="text"></i><span><b>Caption</b><small>Fine print or context</small></span></button>
 </div></div>
-<div class="picker-group" id="mediaPickerGroup"><h3>Media</h3><div class="picker-grid"><button data-pick-type="image"><i data-lucide="image-plus"></i><span><b>Image</b><small>Photo or screenshot</small></span></button></div></div>
 </div></div></div>
 <div id="mcpSheet" class="sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpTitle" aria-hidden="true">
 <div class="sheet mcp-sheet">
@@ -856,7 +856,6 @@ function showPicker(mode){
  pickerMode=mode;pickerReturn=document.activeElement;
  $("blockPickerTitle").textContent=mode==="turn"?"Turn into…":"Add content";
  $("pickerKicker").textContent=mode==="turn"?"CHANGE BLOCK TYPE":"INSERT INTO SLIDE";
- $("mediaPickerGroup").hidden=false;
  $("blockPicker").classList.add("open");$("blockPicker").setAttribute("aria-hidden","false");$("closeBlockPicker").focus();
 }
 function hidePicker(){
@@ -1283,7 +1282,7 @@ function render(){
 }
 function appendBlock(type,text){
  if(current().blocks.length>=45){notify("Slide is full");return}
- const b=block(type,text??({h1:"New heading",h2:"New subheading",p:"Tap to edit",ul:"First idea\nSecond idea",ol:"First step\nSecond step",quote:"A thought worth sharing.",stat:"42%",kicker:"YOUR SECTION",caption:"Add context or a source"}[type]||"Type here..."));
+ const b=block(type,type==="image"?"":text??({h1:"New heading",h2:"New subheading",p:"Tap to edit",ul:"First idea\nSecond idea",ol:"First step\nSecond step",quote:"A thought worth sharing.",stat:"42%",kicker:"YOUR SECTION",caption:"Add context or a source"}[type]||"Type here..."));
  const at=insertAfterId?current().blocks.findIndex(x=>x.id===insertAfterId):-1;
  current().blocks.splice(at<0?current().blocks.length:at+1,0,b);insertAfterId=null;selectedBlockId=b.id;render();scheduleSave();
 }
