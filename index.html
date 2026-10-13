@@ -742,6 +742,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .export-menu button>span{display:flex;flex-direction:column;gap:3px;font-weight:650}
 .export-menu small{font-size:10px;color:#898989;font-weight:400}
 .export-menu .lucide{width:18px;height:18px;color:#777}
+.slyz-import-dialog{z-index:180}
+.slyz-import-dialog .sheet{max-width:450px;padding:0 0 env(safe-area-inset-bottom,0px)}
+.slyz-import-dialog .sheet-scroll{white-space:pre-line;font-size:14px;line-height:1.65;color:#5e5e5e;padding:20px 23px;overflow:auto}
+.slyz-import-dialog .dialog-actions{display:flex;gap:9px;justify-content:flex-end;padding:0 23px 22px;flex-wrap:wrap}
+.slyz-import-dialog .dialog-actions button{min-width:110px}
+.slyz-import-dialog .dialog-actions .dialog-danger{background:#b44242;border-color:#b44242;color:#fff}
+@media(max-width:600px){.slyz-import-dialog .sheet{border-radius:18px 18px 0 0;max-width:none}.slyz-import-dialog .dialog-actions{padding:0 18px 20px}.slyz-import-dialog .dialog-actions button{flex:1}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script></head>
 <body>
@@ -846,7 +853,34 @@ function slideDirection(s){if(s.direction==="rtl"||s.direction==="ltr")return s.
 function colorsForSlide(s){const p=PALETTES.find(x=>x.name===s.palette)||PALETTES[0];return {accent:HEX_COLOR.test(s.colors?.accent||"")?s.colors.accent:p.accent,background:HEX_COLOR.test(s.colors?.background||"")?s.colors.background:p.background,text:HEX_COLOR.test(s.colors?.text||"")?s.colors.text:p.text,tint:p.tint};}
 function renderDesignOptions(){const s=current(),grid=$("designGrid"),paletteGrid=$("paletteGrid");grid.innerHTML="";LAYOUTS.forEach(([id,label])=>{const b=document.createElement("button");b.className="design-card"+((s.layout||"minimal")===id?" active":"");b.dataset.layout=id;b.setAttribute("aria-pressed",String((s.layout||"minimal")===id));const v=document.createElement("div");v.className="design-visual";const sp=document.createElement("span");sp.textContent=label;b.append(v,sp);b.onclick=()=>{s.layout=id;render();scheduleSave()};grid.append(b)});paletteGrid.innerHTML="";PALETTES.forEach(p=>{let b=document.createElement("button");b.className="palette-item"+((s.palette||"Ocean")===p.name?" active":"");b.style.background=p.accent;b.title=p.name;b.setAttribute("aria-label",p.name+" color palette");b.setAttribute("aria-pressed",String((s.palette||"Ocean")===p.name));b.onclick=()=>{s.palette=p.name;s.colors=undefined;s.theme=p.theme;render();scheduleSave()};paletteGrid.append(b)});let colors=colorsForSlide(s);$("accentColor").value=colors.accent;$("backgroundColor").value=colors.background;$("textColor").value=colors.text;document.querySelectorAll(".direction [data-direction]").forEach(b=>{b.classList.toggle("active",(s.direction||"auto")===b.dataset.direction);b.setAttribute("aria-pressed",String((s.direction||"auto")===b.dataset.direction))})}
 function applyImportedDeck(raw){const deck=validateDeck(raw);slides=deck;selected=0;render();scheduleSave();notify("Presentation imported")}
-function decodeIncomingHash(){const hash=window.location.hash||"";if(!hash.startsWith("#deck="))return;try{const token=hash.slice(6);if(token.length>45000)throw Error("Link too large; import JSON instead.");const b64=token.replace(/-/g,"+").replace(/_/g,"/");const bin=atob(b64.padEnd(Math.ceil(b64.length/4)*4,"="));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));const raw=JSON.parse(new TextDecoder().decode(bytes));if(!confirm("Import the presentation from this link? Your current deck will be replaced. Export a backup first if needed."))return;applyImportedDeck(raw)}catch(e){notify("Invalid import link: "+(e.message||"error"))}finally{history.replaceState(null,"",location.pathname+location.search)}}
+async function decodeIncomingHash(){
+ const hash=window.location.hash||"";
+ const compressed=hash.startsWith("#deckz=");
+ if(!compressed&&!hash.startsWith("#deck="))return;
+ try{
+  const token=hash.slice(compressed?7:6);
+  if(token.length>45000)throw Error("Link too large; import a Slyz ZIP or JSON file instead.");
+  const b64=token.replace(/-/g,"+").replace(/_/g,"/");
+  const bin=atob(b64.padEnd(Math.ceil(b64.length/4)*4,"="));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  let data=bytes;
+  if(compressed){
+   if(typeof DecompressionStream!=="function")throw Error("Compressed links aren't supported by this browser; import JSON or ZIP instead.");
+   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+   // Avoid materializing unbounded imported JSON into browser storage.
+   const reader=stream.getReader(), parts=[];
+   let size=0;
+   for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>600000){await reader.cancel();throw Error("Decompressed presentation is too large.");}parts.push(value);}
+   data=new Uint8Array(size);let offset=0;for(const part of parts){data.set(part,offset);offset+=part.length;}
+  }
+  const raw=JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(data));
+  validateDeck(raw);
+  const approved=await slyzDialog("Import presentation?","This will replace the presentation currently saved on this device. Export a Slyz ZIP backup first if you want to keep it.",{confirmLabel:"Import slides"});
+  if(!approved)return;
+  applyImportedDeck(raw);
+ }catch(e){notify("Invalid import link: "+(e.message||"error"))}
+ finally{history.replaceState(null,"",location.pathname+location.search)}
+}
 function cleanDefaultDeck(raw){if(!raw||!Array.isArray(raw.slides))return false;const arr=raw.slides;if(arr.length!==12)return false;return arr.some(s=>(s.title==="بداية جديدة"||s.title==="الختام")&&s.blocks?.some(b=>b.text?.includes("وريد")))&&!arr.some(s=>s.blocks?.some(b=>b.type==="image"));}
 
 let slides=defaultSlides(), selected=0, playIndex=0, dragIndex=null, db=null, saveTimer=0, renderScheduled=0;
@@ -1110,6 +1144,31 @@ function closeShortcuts(){$("shortcutsSheet").classList.remove("open");$("shortc
 function current(){return slides[selected]}
 function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notify(msg){const x=$('toast');x.textContent=msg;x.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>x.classList.remove('show'),2900)}
+function slyzDialog(title,body,{confirmLabel="Continue",notice=false,danger=false}={}){
+ return new Promise(resolve=>{
+  const previous=document.activeElement;
+  const overlay=document.createElement("div");overlay.className="sheet-overlay slyz-import-dialog open";
+  overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");
+  const sheet=document.createElement("div");sheet.className="sheet";
+  const head=document.createElement("div");head.className="sheet-head";
+  const heading=document.createElement("h2");heading.id="slyz-dialog-title";heading.textContent=title;overlay.setAttribute("aria-labelledby",heading.id);
+  head.append(heading);
+  const content=document.createElement("div");content.className="sheet-scroll";content.textContent=body;
+  const actions=document.createElement("div");actions.className="dialog-actions";
+  const cancel=document.createElement("button");cancel.type="button";cancel.className="btn";cancel.textContent=notice?"Close":"Cancel";
+  const yes=document.createElement("button");yes.type="button";yes.className="btn primary"+(danger?" dialog-danger":"");yes.textContent=confirmLabel;
+  const finish=value=>{document.removeEventListener("keydown",keys,true);overlay.remove();if(previous instanceof HTMLElement)previous.focus();resolve(value);};
+  const keys=e=>{if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();finish(false)}};
+  document.addEventListener("keydown",keys,true);
+  cancel.addEventListener("click",()=>finish(false));
+  if(!notice){yes.addEventListener("click",()=>finish(true));actions.append(cancel,yes)}
+  else actions.append(cancel);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)finish(false)});
+  sheet.append(head,content,actions);overlay.append(sheet);document.body.append(overlay);
+  (notice?cancel:yes).focus();
+ });
+}
+
 function clampText(text){return String(text??'').slice(0,8000)}
 function validateDeck(raw){
  if(!raw||!Array.isArray(raw.slides)||!raw.slides.length||raw.slides.length>150)throw Error("Invalid presentation or too many slides");
@@ -1370,9 +1429,9 @@ async function importDeck(file){
  try{
   if(file.size>180*1024*1024)throw Error("Project is too large");
   const raw=await window.SlyzIO.importFile(file);
-  if(!confirm("Replace current presentation with imported slides? Export a backup first if needed."))return;
+  if(!await slyzDialog("Replace the current presentation?","This will replace your slides saved on this device. Export a Slyz ZIP backup first if you want to keep them.",{confirmLabel:"Import slides"}))return;
   applyImportedDeck(raw);
-  if(raw.importWarnings?.length)window.alert("PowerPoint imported with limitations:\n\n"+raw.importWarnings.join("\n"));
+  if(raw.importWarnings?.length)void slyzDialog("PowerPoint import limitations",raw.importWarnings.join("\n")+"\n\nFor lossless, editable Slyz-to-Slyz transfers, use Export Slyz project (.zip).",{notice:true});
  }catch(e){console.error("Slyz import failed",e);notify(e.message||"Invalid presentation file")}
  finally{$("importInput").value=""}
 }
@@ -1437,7 +1496,7 @@ function bind(){
 async function init(){
  bind();try{db=await openDB();const stored=await dbGet();if(stored?.slides){if(cleanDefaultDeck(stored)){slides=defaultSlides();scheduleSave()}else{try{slides=validateDeck(stored)}catch(e){notify("Stored deck was invalid; starter opened")}}}else if(localStorage.getItem(STORAGE_DB)){const old=JSON.parse(localStorage.getItem(STORAGE_DB));slides=cleanDefaultDeck(old)?defaultSlides():validateDeck(old)}}
  catch(e){db=null;try{const old=localStorage.getItem(STORAGE_DB);if(old){const raw=JSON.parse(old);slides=cleanDefaultDeck(raw)?defaultSlides():validateDeck(raw)}}catch(x){}notify("Local database unavailable; export a backup to be safe")}
- render();if(location.hash.startsWith("#deck="))decodeIncomingHash();iconify();
+ render();iconify();if(location.hash.startsWith("#deck=")||location.hash.startsWith("#deckz="))await decodeIncomingHash();
 }init();
 })();
 </script>

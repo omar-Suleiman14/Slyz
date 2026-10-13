@@ -79,14 +79,22 @@
     const JSZip = await getZip();
     if (file.size > MAX_ARCHIVE) throw Error('ZIP project exceeds the 180 MB size limit.');
     const zip = await JSZip.loadAsync(file, {checkCRC32: true});
-    const dataEntry = zip.file('project.json');
-    if (!dataEntry || dataEntry._data?.uncompressedSize > 10 * 1024 * 1024) throw Error('Not a supported Slyz ZIP project.');
+    // Slyz backups use project.json; older MCP-created portable ZIPs may
+    // contain deck.json with the same deck object returned by create_deck.
+    // Both formats are still validated and image paths stay tightly scoped.
+    const nativeEntry = zip.file('project.json');
+    const dataEntry = nativeEntry || zip.file('deck.json');
+    if (!dataEntry || dataEntry.dir || dataEntry._data?.uncompressedSize > 10 * 1024 * 1024) {
+      throw Error('Not a supported Slyz ZIP project. Expected project.json or deck.json.');
+    }
     const contents = await dataEntry.async('string');
     if (contents.length > 10 * 1024 * 1024) throw Error('Project data is too large.');
     const project = JSON.parse(contents);
-    if (project.format !== FORMAT || project.formatVersion !== VERSION || !Array.isArray(project.slides)) {
+    if (nativeEntry ? project.format !== FORMAT || project.formatVersion !== VERSION :
+      project.version !== 1 || project.format !== undefined) {
       throw Error('Unsupported Slyz project version.');
     }
+    if (!Array.isArray(project.slides)) throw Error('Project is missing its slides.');
     if (!project.slides.length || project.slides.length > 150) throw Error('Project must contain 1 to 150 slides.');
     let total = 0;
     const images = new Map();

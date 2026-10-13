@@ -7,6 +7,7 @@
  * The returned import URL carries only explicitly supplied slide text.
  */
 const { Buffer } = require("node:buffer");
+const { gzipSync } = require("node:zlib");
 
 const ORIGIN = "https://slyz.vercel.app/";
 const VERSION = "1.1.0";
@@ -57,7 +58,7 @@ const slideSchema = {
 const TOOLS = [
   {
     name: "create_deck",
-    description: "Create an editable slide presentation in English, Arabic or both. Choose layouts, themes, colors and RTL. Return an import link usable on mobile and web without cloud storage.",
+    description: "Create an editable slide presentation in English, Arabic or both. Choose layouts, themes, colors and RTL. Return a mobile/web import link, gzip-compressed for larger decks when possible, without cloud storage.",
     inputSchema: {
       type: "object",
       properties: { slides: { type: "array", minItems: 1, maxItems: MAX_SLIDES, items: slideSchema } },
@@ -128,13 +129,18 @@ function validateSlides(slides) {
 function deckResult(slides) {
   const deck = { version: 1, slides: validateSlides(slides) };
   const deck_json = JSON.stringify(deck);
-  const link = ORIGIN + "#deck=" + Buffer.from(deck_json, "utf8").toString("base64url");
+  // Most real decks exceed a safe mobile URL when encoded as raw JSON.
+  // Keep the backwards-compatible #deck= fragment for small decks.
+  // For larger decks use gzip + base64url; no deck is uploaded or stored.
+  const rawLink = ORIGIN + "#deck=" + Buffer.from(deck_json, "utf8").toString("base64url");
+  const compressedLink = ORIGIN + "#deckz=" + gzipSync(Buffer.from(deck_json, "utf8")).toString("base64url");
+  const link = rawLink.length < 16000 ? rawLink : compressedLink;
   const output = {
     slide_count: deck.slides.length,
     editor_link: link.length < 16000 ? link : null,
     import_instructions: link.length < 16000
       ? "Open the link on your phone or web browser and approve the import into local browser storage."
-      : "Import link exceeds safe URL length. Save deck_json to a JSON file and import it in Slide Studio.",
+      : "Import link exceeds safe URL length even after compression. Save deck_json as a .json file and import it in Slide Studio.",
     deck_json,
     deck,
     privacy_note: "This MCP stores no decks. Import links include slide text. Avoid patient data, passwords and other confidential information. Browser-local edits remain private unless explicitly exported."
