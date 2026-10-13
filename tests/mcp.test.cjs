@@ -85,3 +85,24 @@ test("responds to preflight and initialized notification", async () => {
   await handler({ method: "POST", body: { jsonrpc: "2.0", method: "notifications/initialized" } }, notification);
   assert.equal(notification.statusCode, 202);
 });
+
+test("long Arabic decks use a compact, lossless import link", async () => {
+  const { gunzipSync } = require("node:zlib");
+  const slides = Array.from({ length: 21 }, (_, index) => ({
+    title: "سلايد " + (index + 1),
+    direction: "rtl",
+    blocks: [
+      { type: "h1", text: "وريد: وقت أكتر للدكتور والمريض" },
+      { type: "p", text: ("لما العيادة تبقى أهدى، الدكتور يركز مع مرضاه. ").repeat(25) },
+      { type: "ul", text: ("مواعيد وحجوزات وتأكيدات\\n").repeat(18) }
+    ]
+  }));
+  const result = await rpc("tools/call", { name: "create_deck", arguments: { slides } });
+  const deck = result.body.result.structuredContent;
+  assert.equal(deck.slide_count, 21);
+  assert.ok(deck.editor_link, "long decks must not require a manual JSON save");
+  assert.match(deck.editor_link, /^https:\/\/slyz\.vercel\.app\/#deckz=/);
+  const fragment = deck.editor_link.split("#deckz=")[1];
+  assert.deepEqual(JSON.parse(gunzipSync(Buffer.from(fragment, "base64url")).toString("utf8")), deck.deck);
+  assert.ok(deck.editor_link.length < 16000);
+});
